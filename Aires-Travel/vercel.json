@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "public/$1"
+    }
+  ],
+  "env": {
+    "CESIUM_TOKEN": "@cesium_token",
+    "OPENAI_API_KEY": "@openai_api_key",
+    "OPENWEATHER_API_KEY": "@openweather_api_key"
+  },
+  "functions": {
+    "api/**/*.py": {
+      "maxDuration": 10
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "ares-travel",
+  "version": "5.2.0",
+  "description": "Sistema di viaggio autonomo con globe 3D realistico",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Build completed'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["travel", "cesium", "3d", "globe", "ai"],
+  "author": "Ares Travel",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}

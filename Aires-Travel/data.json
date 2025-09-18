@@ -1,0 +1,604 @@
+{
+  "next_id": 6,
+  "trips": [
+    {
+      "id": 1,
+      "title": "Reykjavík, Islanda",
+      "destination": "Reykjavík, Islanda",
+      "country": "Iceland",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "origin_cities": [
+        "Milano",
+        "Zurigo",
+        "Ginevra"
+      ],
+      "dates": {
+        "start": "2025-10-15",
+        "end": "2025-10-21"
+      },
+      "price_chf": 2044,
+      "currency": "CHF",
+      "seats_total": 12,
+      "seats_available": 12,
+      "highlights": [
+        "Golden Circle",
+        "Blue Lagoon",
+        "Jeep notturna per Aurora",
+        "Cascate Gullfoss & Skógafoss"
+      ],
+      "interests": [
+        "aurora",
+        "natura",
+        "trekking",
+        "fotografia",
+        "avventura"
+      ],
+      "climate_avg": "Ottobre: 0–5°C, variabile; notti fredde ma cieli limpidi possibili",
+      "image_url": "https://source.unsplash.com/featured/?iceland,aurora"
+    },
+    {
+      "id": 2,
+      "title": "Tokyo, Giappone",
+      "destination": "Tokyo, Giappone",
+      "country": "Japan",
+      "lat": 35.6762,
+      "lng": 139.6503,
+      "origin_cities": [
+        "Milano",
+        "Roma",
+        "Zurigo"
+      ],
+      "dates": {
+        "start": "2025-11-10",
+        "end": "2025-11-18"
+      },
+      "price_chf": 2461,
+      "currency": "CHF",
+      "seats_total": 10,
+      "seats_available": 10,
+      "highlights": [
+        "Shibuya & Asakusa",
+        "Fushimi Inari",
+        "Onsen day",
+        "Shinkansen Tokyo–Kyoto",
+        "Street food tour"
+      ],
+      "interests": [
+        "città",
+        "cultura",
+        "cibo",
+        "onsen",
+        "templi"
+      ],
+      "climate_avg": "Novembre: 10–18°C, asciutto, foliage in molte aree",
+      "image_url": "https://source.unsplash.com/featured/?tokyo,kyoto,japan"
+    },
+    {
+      "id": 3,
+      "title": "Costa Rica, America Centrale",
+      "destination": "Costa Rica, America Centrale",
+      "country": "Costa Rica",
+      "lat": 9.9281,
+      "lng": -84.0907,
+      "origin_cities": [
+        "Madrid",
+        "Milano",
+        "Zurigo"
+      ],
+      "dates": {
+        "start": "2026-01-20",
+        "end": "2026-01-27"
+      },
+      "price_chf": 1382,
+      "currency": "CHF",
+      "seats_total": 14,
+      "seats_available": 14,
+      "highlights": [
+        "Canopy zipline",
+        "Surf a Tamarindo",
+        "Hike vulcano Arenal",
+        "Wildlife tour"
+      ],
+      "interests": [
+        "mare",
+        "natura",
+        "avventura",
+        "trekking",
+        "fauna"
+      ],
+      "climate_avg": "Gennaio: 24–32°C, stagione secca lato Pacifico",
+      "image_url": "https://source.unsplash.com/featured/?costa-rica,beach,jungle"
+    },
+    {
+      "id": 4,
+      "title": "Siviglia, Spagna",
+      "destination": "Siviglia, Spagna",
+      "country": "Spain",
+      "lat": 37.3891,
+      "lng": -5.9845,
+      "origin_cities": [
+        "Milano",
+        "Zurigo",
+        "Torino"
+      ],
+      "dates": {
+        "start": "2026-04-12",
+        "end": "2026-04-18"
+      },
+      "price_chf": 1128,
+      "currency": "CHF",
+      "seats_total": 16,
+      "seats_available": 16,
+      "highlights": [
+        "Alcázar & Cattedrale",
+        "Alhambra di Granada",
+        "Spettacolo Flamenco",
+        "Tapas tour",
+        "Ronda day trip"
+      ],
+      "interests": [
+        "cultura",
+        "cibo",
+        "storia",
+        "città",
+        "fotografia"
+      ],
+      "climate_avg": "Aprile: 18–24°C, mite e soleggiato",
+      "image_url": "https://source.unsplash.com/featured/?sevilla,granada,andalusia"
+    },
+    {
+      "id": 5,
+      "title": "Santorini, Grecia",
+      "destination": "Santorini, Grecia",
+      "country": "Greece",
+      "lat": 36.3932,
+      "lng": 25.4615,
+      "origin_cities": [
+        "Milano",
+        "Bergamo",
+        "Zurigo"
+      ],
+      "dates": {
+        "start": "2026-07-05",
+        "end": "2026-07-11"
+      },
+      "price_chf": 1534,
+      "currency": "CHF",
+      "seats_total": 18,
+      "seats_available": 18,
+      "highlights": [
+        "Crociera nella Caldera",
+        "Tramonto a Oia",
+        "Spiagge nere & rosse",
+        "Wine tasting"
+      ],
+      "interests": [
+        "mare",
+        "relax",
+        "tramonti",
+        "coppie",
+        "famiglia"
+      ],
+      "climate_avg": "Luglio: 25–30°C, soleggiato e ventilato (meltemi)",
+      "image_url": "https://source.unsplash.com/featured/?santorini,aegean"
+    }
+  ],
+  "bookings": [],
+  "leads": [],
+  "analytics": [
+    {
+      "trip_id": 1,
+      "views": 1,
+      "ai_suggestions": 0,
+      "bookings": 0,
+      "revenue": 0,
+      "last_updated": "2025-09-03T12:16:45.301881"
+    },
+    {
+      "trip_id": 3,
+      "views": 1,
+      "ai_suggestions": 0,
+      "bookings": 0,
+      "revenue": 0,
+      "last_updated": "2025-09-03T12:16:45.301889"
+    }
+  ],
+  "wishlists": [
+    {
+      "user_id": "test_user",
+      "trip_id": 1,
+      "added_at": "2025-09-03T12:16:55.572921"
+    }
+  ],
+  "comparisons": [],
+  "payment_sessions": [
+    {
+      "session_id": "cs_test_a1uCieUPjzcfYAjxN0ebsnnpVYGG8XWb0wqvseZkLsArkbefSvSpCMavmx",
+      "payment_intent_id": null,
+      "trip_id": 1,
+      "user_email": "marco@test.it",
+      "amount_total": 3780,
+      "amount_deposit": 1134,
+      "pax": 2,
+      "status": "pending",
+      "created_at": "2025-09-03T12:16:58.676399"
+    }
+  ],
+  "user_profiles": [
+    {
+      "user_id": "marco123",
+      "name": null,
+      "email": null,
+      "phone": null,
+      "preferences": {},
+      "visit_history": [
+        {
+          "action": "view_trip",
+          "trip_id": 1,
+          "timestamp": "2025-09-03T12:33:23.531349",
+          "details": {
+            "source": "live_tracking"
+          }
+        },
+        {
+          "action": "view_trip",
+          "trip_id": 1,
+          "timestamp": "2025-09-03T12:33:23.576777",
+          "details": {
+            "source": "live_tracking"
+          }
+        },
+        {
+          "action": "view_trip",
+          "trip_id": 2,
+          "timestamp": "2025-09-03T12:33:23.623252",
+          "details": {
+            "source": "live_tracking"
+          }
+        }
+      ],
+      "booking_history": [],
+      "last_seen": "2025-09-03T12:33:23.623262"
+    },
+    {
+      "user_id": "sara456",
+      "name": null,
+      "email": null,
+      "phone": null,
+      "preferences": {},
+      "visit_history": [
+        {
+          "action": "view_trip",
+          "trip_id": 1,
+          "timestamp": "2025-09-03T12:33:26.823870",
+          "details": {
+            "source": "live_tracking"
+          }
+        }
+      ],
+      "booking_history": [],
+      "last_seen": "2025-09-03T12:33:26.823872"
+    },
+    {
+      "user_id": "luca789",
+      "name": null,
+      "email": null,
+      "phone": null,
+      "preferences": {},
+      "visit_history": [
+        {
+          "action": "view_trip",
+          "trip_id": 1,
+          "timestamp": "2025-09-03T12:33:26.864322",
+          "details": {
+            "source": "live_tracking"
+          }
+        }
+      ],
+      "booking_history": [],
+      "last_seen": "2025-09-03T12:33:26.864325"
+    },
+    {
+      "user_id": "test1",
+      "name": null,
+      "email": null,
+      "phone": null,
+      "preferences": {},
+      "visit_history": [
+        {
+          "action": "view_trip",
+          "trip_id": 1,
+          "timestamp": "2025-09-03T12:38:00.853145",
+          "details": {
+            "source": "live_tracking"
+          }
+        }
+      ],
+      "booking_history": [],
+      "last_seen": "2025-09-03T12:38:00.853148"
+    },
+    {
+      "user_id": "test2",
+      "name": null,
+      "email": null,
+      "phone": null,
+      "preferences": {},
+      "visit_history": [
+        {
+          "action": "view_trip",
+          "trip_id": 1,
+          "timestamp": "2025-09-03T12:38:00.930382",
+          "details": {
+            "source": "live_tracking"
+          }
+        }
+      ],
+      "booking_history": [],
+      "last_seen": "2025-09-03T12:38:00.930385"
+    },
+    {
+      "user_id": "test3",
+      "name": null,
+      "email": null,
+      "phone": null,
+      "preferences": {},
+      "visit_history": [
+        {
+          "action": "view_trip",
+          "trip_id": 1,
+          "timestamp": "2025-09-03T12:38:00.994626",
+          "details": {
+            "source": "live_tracking"
+          }
+        }
+      ],
+      "booking_history": [],
+      "last_seen": "2025-09-03T12:38:00.994630"
+    },
+    {
+      "user_id": "test4",
+      "name": null,
+      "email": null,
+      "phone": null,
+      "preferences": {},
+      "visit_history": [
+        {
+          "action": "view_trip",
+          "trip_id": 1,
+          "timestamp": "2025-09-03T12:38:01.039687",
+          "details": {
+            "source": "live_tracking"
+          }
+        }
+      ],
+      "booking_history": [],
+      "last_seen": "2025-09-03T12:38:01.039690"
+    },
+    {
+      "user_id": "test5",
+      "name": null,
+      "email": null,
+      "phone": null,
+      "preferences": {},
+      "visit_history": [
+        {
+          "action": "view_trip",
+          "trip_id": 1,
+          "timestamp": "2025-09-03T12:38:01.075509",
+          "details": {
+            "source": "live_tracking"
+          }
+        }
+      ],
+      "booking_history": [],
+      "last_seen": "2025-09-03T12:38:01.075512"
+    }
+  ],
+  "smart_notifications": [
+    {
+      "id": "recommendation_3_marco123_1756902803",
+      "user_id": "marco123",
+      "type": "personal_recommendation",
+      "title": "✨ Ho trovato qualcosa che ti piacerà",
+      "message": "Basandomi sui tuoi interessi, penso che Costa Rica • Natura & Oceano (Arenal + Guanacaste) sia perfetto per te! 1790 CHF",
+      "trip_id": 3,
+      "priority": "medium",
+      "created_at": "2025-09-03T12:33:23.576844",
+      "expires_at": "2025-09-10T12:33:23.576847",
+      "seen": false
+    },
+    {
+      "id": "recommendation_4_marco123_1756902803",
+      "user_id": "marco123",
+      "type": "personal_recommendation",
+      "title": "✨ Ho trovato qualcosa che ti piacerà",
+      "message": "Basandomi sui tuoi interessi, penso che Andalusia • Siviglia, Cordoba & Granada sia perfetto per te! 1290 CHF",
+      "trip_id": 4,
+      "priority": "medium",
+      "created_at": "2025-09-03T12:33:23.623318",
+      "expires_at": "2025-09-10T12:33:23.623321",
+      "seen": false
+    }
+  ],
+  "personalized_offers": [],
+  "live_activity": {
+    "viewers": {
+      "marco123": {
+        "trip_id": 2,
+        "last_seen": 1756902803.623243
+      },
+      "sara456": {
+        "trip_id": 1,
+        "last_seen": 1756902806.8238451
+      },
+      "luca789": {
+        "trip_id": 1,
+        "last_seen": 1756902806.8643043
+      },
+      "test1": {
+        "trip_id": 1,
+        "last_seen": 1756903080.853112
+      },
+      "test2": {
+        "trip_id": 1,
+        "last_seen": 1756903080.9303625
+      },
+      "test3": {
+        "trip_id": 1,
+        "last_seen": 1756903080.9946046
+      },
+      "test4": {
+        "trip_id": 1,
+        "last_seen": 1756903081.039667
+      },
+      "test5": {
+        "trip_id": 1,
+        "last_seen": 1756903081.075488
+      }
+    },
+    "total_views_today": 10
+  },
+  "dynamic_pricing": [
+    {
+      "trip_id": 1,
+      "base_price": 1890,
+      "current_price": 2044,
+      "demand_multiplier": 1.05,
+      "weather_multiplier": 1.03,
+      "urgency_multiplier": 1.0,
+      "flash_discount": 0,
+      "pricing_history": [
+        {
+          "price": 1946,
+          "timestamp": "2025-09-03T12:37:58.122192",
+          "demand": 1.0,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 2
+        },
+        {
+          "price": 2044,
+          "timestamp": "2025-09-03T12:38:02.624209",
+          "demand": 1.05,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 7
+        },
+        {
+          "price": 2044,
+          "timestamp": "2025-09-03T12:38:08.781299",
+          "demand": 1.05,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 7
+        }
+      ],
+      "last_updated": "2025-09-03T12:38:08.781289"
+    },
+    {
+      "trip_id": 2,
+      "base_price": 2390,
+      "current_price": 2461,
+      "demand_multiplier": 1.0,
+      "weather_multiplier": 1.03,
+      "urgency_multiplier": 1.0,
+      "flash_discount": 0,
+      "pricing_history": [
+        {
+          "price": 2461,
+          "timestamp": "2025-09-03T12:38:08.781334",
+          "demand": 1.0,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 1
+        }
+      ],
+      "last_updated": "2025-09-03T12:38:08.781329"
+    },
+    {
+      "trip_id": 3,
+      "base_price": 1790,
+      "current_price": 1382,
+      "demand_multiplier": 1.0,
+      "weather_multiplier": 1.03,
+      "urgency_multiplier": 1.0,
+      "flash_discount": 25,
+      "pricing_history": [
+        {
+          "price": 1382,
+          "timestamp": "2025-09-03T12:38:02.671592",
+          "demand": 1.0,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 0
+        },
+        {
+          "price": 1382,
+          "timestamp": "2025-09-03T12:38:08.741390",
+          "demand": 1.0,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 0
+        },
+        {
+          "price": 1382,
+          "timestamp": "2025-09-03T12:38:08.781378",
+          "demand": 1.0,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 0
+        }
+      ],
+      "last_updated": "2025-09-03T12:38:08.781374"
+    },
+    {
+      "trip_id": 4,
+      "base_price": 1290,
+      "current_price": 1128,
+      "demand_multiplier": 1.0,
+      "weather_multiplier": 1.03,
+      "urgency_multiplier": 1.0,
+      "flash_discount": 15,
+      "pricing_history": [
+        {
+          "price": 1328,
+          "timestamp": "2025-09-03T12:38:08.781400",
+          "demand": 1.0,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 0
+        },
+        {
+          "price": 1128,
+          "timestamp": "2025-09-03T12:38:08.781458",
+          "demand": 1.0,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 0
+        }
+      ],
+      "last_updated": "2025-09-03T12:38:08.781455"
+    },
+    {
+      "trip_id": 5,
+      "base_price": 1490,
+      "current_price": 1534,
+      "demand_multiplier": 1.0,
+      "weather_multiplier": 1.03,
+      "urgency_multiplier": 1.0,
+      "flash_discount": 0,
+      "pricing_history": [
+        {
+          "price": 1534,
+          "timestamp": "2025-09-03T12:38:08.781420",
+          "demand": 1.0,
+          "weather": 1.03,
+          "urgency": 1.0,
+          "viewers": 0
+        }
+      ],
+      "last_updated": "2025-09-03T12:38:08.781417"
+    }
+  ]
+}

@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Travel - Globe Terrestre 3D</title>
+    
+    <!-- CESIUM.JS NATIVO PER GLOBE REALISTICO -->
+    <script>
+        window.CESIUM_BASE_URL = 'https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/';
+    </script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* HEADER */
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        #header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #statusBadges {
+            display: flex;
+            gap: 8px;
+        }
+
+        .badge {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .badge.success { background: rgba(0, 255, 136, 0.2); border-color: #00ff88; }
+        .badge.warning { background: rgba(255, 167, 38, 0.2); border-color: #ffa726; }
+        .badge.error { background: rgba(255, 71, 87, 0.2); border-color: #ff4757; }
+
+        /* GLOBE 3D CONTAINER MOBILE-SAFE */
+        #globe3d {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100vw;
+            height: calc(100vh - 60px);
+            z-index: 1;
+            /* Anti-scroll mobile critical */
+            touch-action: none;
+            overscroll-behavior: contain;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* FALLBACK BANNER */
+        #fallbackBanner {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: rgba(255, 167, 38, 0.9);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            z-index: 15;
+            display: none;
+        }
+
+        #fallbackBanner.show {
+            display: block;
+        }
+
+        /* FALLBACK CSS GLOBE */
+        #fallbackGlobe {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(400px, 80vw);
+            height: min(400px, 80vw);
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 2px, transparent 2px),
+                url('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg') center/cover;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            display: none;
+            animation: rotate 120s linear infinite;
+            box-shadow: 
+                0 0 50px rgba(79, 195, 247, 0.4),
+                inset 0 0 50px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+
+        #fallbackGlobe.active {
+            display: block;
+        }
+
+        @keyframes rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* PIN CSS per fallback */
+        .fallback-pin {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 50%;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .fallback-pin:hover {
+            transform: translate(-50%, -50%) scale(1.3);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.6);
+        }
+
+        .fallback-pin::after {
+            content: attr(data-city);
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .fallback-pin:hover::after {
+            opacity: 1;
+        }
+
+        /* CHAT PANEL */
+        #chatPanel {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            z-index: 20;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #chatHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        #wsStatus {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        #wsStatus.online { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+        #wsStatus.offline { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        #wsStatus.connecting { background: rgba(255, 167, 38, 0.2); color: #ffa726; }
+
+        #chatMessages {
+            height: 120px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            padding: 4px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+
+        .message {
+            margin: 8px 0;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            animation: fadeIn 0.3s ease;
+            line-height: 1.4;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            background: rgba(0, 212, 255, 0.2);
+            margin-left: 20%;
+            text-align: right;
+        }
+
+        .message.assistant {
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: 20%;
+        }
+
+        .message.system {
+            background: rgba(255, 170, 0, 0.15);
+            text-align: center;
+            font-style: italic;
+            font-size: 12px;
+        }
+
+        .message.error {
+            background: rgba(255, 71, 87, 0.2);
+            text-align: center;
+            font-size: 12px;
+        }
+
+        #chatInputs {
+            display: flex;
+            gap: 8px;
+        }
+
+        #chatInput {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #chatInput:focus {
+            border-color: #00d4ff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        #chatInput::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        #sendButton {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 44px;
+        }
+
+        #sendButton:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+        }
+
+        #sendButton:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* INFO PANEL per destinazioni */
+        #infoPanel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(400px, 90vw);
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            z-index: 30;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        #infoPanel.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        #infoPanel h3 {
+            color: #00d4ff;
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        #infoPanel p {
+            line-height: 1.6;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+
+        #infoPanel .price {
+            font-size: 28px;
+            font-weight: 700;
+            color: #00ff88;
+            margin: 16px 0;
+        }
+
+        #infoPanel button {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 12px;
+            transition: all 0.2s ease;
+            min-height: 48px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none !important;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: auto !important;
+        }
+
+        /* LOADING OVERLAY */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            text-align: center;
+            margin-top: 16px;
+            opacity: 0.8;
+        }
+
+        /* TOAST NOTIFICATIONS */
+        .toast {
+            position: fixed;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 167, 38, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 40;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            #header {
+                padding: 0 12px;
+            }
+
+            #header h1 {
+                font-size: 16px;
+            }
+
+            #chatPanel {
+                bottom: 12px;
+                left: 12px;
+                right: 12px;
+            }
+
+            .message.user,
+            .message.assistant {
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            #statusBadges {
+                gap: 4px;
+            }
+
+            .badge {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div id="header">
+        <h1>🌍 Ares Travel</h1>
+        <div id="statusBadges">
+            <div class="badge" id="globeBadge">🌍 Globe: Caricamento...</div>
+            <div class="badge" id="wsBadge">WS: Offline</div>
+            <div class="badge" id="gpsStatus">GPS: Off</div>
+        </div>
+    </div>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <h2>🌍 Ares Travel</h2>
+        <div class="loading-text">
+            <p>Caricamento globe terrestre 3D...</p>
+            <p id="loadingStep">Inizializzazione...</p>
+        </div>
+    </div>
+
+    <!-- FALLBACK BANNER -->
+    <div id="fallbackBanner">
+        ⚠️ Globe fallback attivo - Globe.gl non disponibile
+    </div>
+
+    <!-- GLOBE 3D CONTAINER -->
+    <div id="globe3d"></div>
+
+    <!-- FALLBACK CSS GLOBE -->
+    <div id="fallbackGlobe"></div>
+
+    <!-- INFO PANEL -->
+    <div id="infoPanel">
+        <button class="close-btn" onclick="closeInfo()">×</button>
+        <div>
+            <h3 id="infoTitle">Destinazione</h3>
+            <p id="infoDescription">Descrizione destinazione</p>
+            <div class="price" id="infoPrice">€0</div>
+            <button onclick="bookDestination()">Prenota Viaggio</button>
+        </div>
+    </div>
+
+    <!-- CHAT PANEL -->
+    <div id="chatPanel">
+        <div id="chatHeader">
+            <span>🤖 Assistente Viaggi</span>
+            <span id="wsStatus" class="offline">Offline</span>
+        </div>
+        
+        <div id="chatMessages"></div>
+        
+        <div id="chatInputs">
+            <input 
+                type="text" 
+                id="chatInput" 
+                placeholder="Chiedi informazioni sui viaggi..."
+                autocomplete="off"
+                maxlength="200"
+            >
+            <button id="sendButton" disabled>Invia</button>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // === ARES TRAVEL - GLOBE TERRESTRE 3D REALE ===
+        console.log('🌍 ARES TRAVEL - Globe Terrestre Reale');
+        
+        // === STATO GLOBALE ===
+        let globe = null;
+        let globeReady = false;
+        let failTimer = null;
+        let ws = null;
+        let wsReady = false;
+        let wsQueue = [];
+        let reconnectAttempts = 0;
+        let maxReconnectDelay = 30000;
+        let currentDestination = null;
+        let loadAttempts = 0;
+        let maxLoadAttempts = 3;
+        
+        // DESTINAZIONI REALI con coordinate precise
+        const destinations = [
+            {
+                id: 1,
+                name: "Tokyo Experience",
+                city: "Tokyo",
+                country: "Giappone", 
+                lat: 35.6762,
+                lng: 139.6503,
+                color: "#ff6b6b",
+                price: 2500,
+                description: "Metropoli futuristica che combina tradizione millenaria e innovazione tecnologica."
+            },
+            {
+                id: 2,
+                name: "Santorini Magic",
+                city: "Santorini",
+                country: "Grecia", 
+                lat: 36.3932,
+                lng: 25.4615,
+                color: "#4ecdc4",
+                price: 1800,
+                description: "Isola vulcanica con tramonti mozzafiato e architettura cicladica unica."
+            },
+            {
+                id: 3,
+                name: "Machu Picchu",
+                city: "Machu Picchu",
+                country: "Perù",
+                lat: -13.1631,
+                lng: -72.5450,
+                color: "#45b7d1", 
+                price: 2200,
+                description: "Cittadella inca mistica nelle Ande con storia millenaria."
+            },
+            {
+                id: 4,
+                name: "Maldive Paradise",
+                city: "Maldive",
+                country: "Oceano Indiano",
+                lat: 3.2028,
+                lng: 73.2207,
+                color: "#f9ca24",
+                price: 3500,
+                description: "Atolli paradisiaci con acque cristalline e resort di lusso."
+            },
+            {
+                id: 5,
+                name: "Reykjavík",
+                city: "Reykjavík",
+                country: "Islanda",
+                lat: 64.1466,
+                lng: -21.9426,
+                color: "#6c5ce7",
+                price: 2800,
+                description: "Capitale del Nord con aurore boreali e paesaggi vulcanici."
+            }
+        ];
+        
+        // === ELEMENTI DOM ===
+        const elements = {
+            loading: document.getElementById('loading'),
+            loadingStep: document.getElementById('loadingStep'),
+            fallbackBanner: document.getElementById('fallbackBanner'),
+            fallbackGlobe: document.getElementById('fallbackGlobe'),
+            globeBadge: document.getElementById('globeBadge'),
+            wsBadge: document.getElementById('wsBadge'),
+            gpsStatus: document.getElementById('gpsStatus'),
+            infoPanel: document.getElementById('infoPanel'),
+            chatMessages: document.getElementById('chatMessages'),
+            chatInput: document.getElementById('chatInput'),
+            sendButton: document.getElementById('sendButton'),
+            wsStatus: document.getElementById('wsStatus'),
+            toast: document.getElementById('toast')
+        };
+        
+        // === UTILITY FUNCTIONS ===
+        function addMessage(text, type = 'system') {
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            msg.textContent = text;
+            elements.chatMessages.appendChild(msg);
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        }
+        
+        function showToast(text, duration = 3000) {
+            elements.toast.textContent = text;
+            elements.toast.classList.add('show');
+            setTimeout(() => {
+                elements.toast.classList.remove('show');
+            }, duration);
+        }
+        
+        function updateBadge(element, text, type = '') {
+            if (element) {
+                element.textContent = text;
+                element.className = 'badge' + (type ? ' ' + type : '');
+            }
+        }
+        
+        function updateLoadingStep(text) {
+            if (elements.loadingStep) {
+                elements.loadingStep.textContent = text;
+                console.log(`[LOADING] ${text}`);
+            }
+        }
+        
+        // === GLOBE.GL 3D INITIALIZATION ===
+        async function waitForCesium() {
+            return new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    if (typeof Cesium !== 'undefined') {
+                        clearInterval(checkInterval);
+                        console.log('[GLOBE] ✅ CesiumJS caricato');
+                        resolve(true);
+                    }
+                }, 100);
+                
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    console.error('[GLOBE] ❌ Timeout CesiumJS');
+                    resolve(false);
+                }, 5000);
+            });
+        }
+        
+        async function initGlobeTerrestre() {
+            console.log('[GLOBE] Inizializzazione globe terrestre CesiumJS...');
+            updateLoadingStep('Caricamento configurazione...');
+            
+            // Carica configurazione Vercel
+            await loadConfig();
+            
+            updateLoadingStep('Verifica disponibilità CesiumJS...');
+            
+            // Verifica caricamento CesiumJS
+            const cesiumLoaded = await waitForCesium();
+            if (!cesiumLoaded) {
+                console.error('[GLOBE] CesiumJS non disponibile');
+                updateLoadingStep('CesiumJS non disponibile');
+                return false;
+            }
+            
+            updateLoadingStep('Creazione globe terrestre realistico...');
+            
+            try {
+                // Set Cesium Ion access token
+                if (typeof cesiumToken !== 'undefined' && cesiumToken) {
+                    Cesium.Ion.defaultAccessToken = cesiumToken;
+                    console.log('[CESIUM] Token configurato');
+                }
+                
+                // INIZIALIZZAZIONE CESIUM VIEWER REALISTICO
+                globe = new Cesium.Viewer('globe3d', {
+                    terrainProvider: Cesium.createWorldTerrain({
+                        requestWaterMask: true,
+                        requestVertexNormals: true
+                    }),
+                    // Ion World Imagery per default (senza override)
+                    skyBox: new Cesium.SkyBox({
+                        sources: {
+                            positiveX: 'https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_px.jpg',
+                            negativeX: 'https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_mx.jpg',
+                            positiveY: 'https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_py.jpg',
+                            negativeY: 'https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_my.jpg',
+                            positiveZ: 'https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_pz.jpg',
+                            negativeZ: 'https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_mz.jpg'
+                        }
+                    }),
+                    baseLayerPicker: false,
+                    geocoder: false,
+                    homeButton: false,
+                    sceneModePicker: false,
+                    navigationHelpButton: false,
+                    animation: false,
+                    timeline: false,
+                    fullscreenButton: false,
+                    scene3DOnly: true,
+                    shouldAnimate: true
+                });
+                
+                if (!globe) {
+                    throw new Error('Creazione Cesium Viewer fallita');
+                }
+                
+                updateLoadingStep('Configurazione illuminazione realistica...');
+                
+                // ILLUMINAZIONE REALISTICA CON ATMOSPHERE
+                globe.scene.globe.enableLighting = true;
+                
+                // Atmosphere properties corrette
+                if (globe.scene.skyAtmosphere) {
+                    globe.scene.skyAtmosphere.saturationShift = -0.25;
+                    globe.scene.skyAtmosphere.hueShift = -0.4;
+                    globe.scene.skyAtmosphere.brightnessShift = 0.1;
+                }
+                
+                // Configurazione fog per realismo
+                globe.scene.fog.enabled = true;
+                globe.scene.fog.density = 0.0002;
+                
+                updateLoadingStep('Configurazione controlli zoom città...');
+                
+                // CONTROLLI ZOOM REALISTICI: 100m - 50km per città
+                const controller = globe.scene.screenSpaceCameraController;
+                
+                // Limiti zoom corretti con API Cesium
+                controller.minimumZoomDistance = 100;      // 100 metri (street level)
+                controller.maximumZoomDistance = 50000000;  // 50.000 km (space view)
+                
+                // Abilita controlli touch mobile
+                controller.enableRotate = true;
+                controller.enableZoom = true;
+                controller.enableTilt = true;
+                controller.enableLook = true;
+                
+                updateLoadingStep('Timeout sicurezza (8s)...');
+                
+                // TIMEOUT 8 SECONDI
+                failTimer = setTimeout(() => {
+                    if (!globeReady) {
+                        console.warn('[GLOBE] ⚠️ Timeout 8s - attivazione fallback');
+                        enableCssFallback('Timeout caricamento');
+                    }
+                }, 8000);
+                
+                // Attendere rendering iniziale
+                setTimeout(() => {
+                    updateLoadingStep('Aggiunta destinazioni...');
+                    
+                    // PIN DESTINAZIONI CON CESIUM ENTITIES
+                    destinations.forEach(d => {
+                        globe.entities.add({
+                            name: `${d.city}, ${d.country}`,
+                            position: Cesium.Cartesian3.fromDegrees(d.lng, d.lat, 1000),
+                            billboard: {
+                                image: createDestinationPin(d.color, d.city),
+                                verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                                scale: 0.8,
+                                heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                            },
+                            label: {
+                                text: `${d.city}`,
+                                font: '14pt sans-serif',
+                                fillColor: Cesium.Color.WHITE,
+                                outlineColor: Cesium.Color.BLACK,
+                                outlineWidth: 2,
+                                style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                                pixelOffset: new Cesium.Cartesian2(0, -50),
+                                showBackground: true,
+                                backgroundColor: Cesium.Color.fromCssColorString(d.color).withAlpha(0.8)
+                            },
+                            destination: d
+                        });
+                    });
+                    
+                    // Click handler per destinazioni
+                    globe.cesiumWidget.screenSpaceEventHandler.setInputAction(function(click) {
+                        const pickedObject = globe.scene.pick(click.position);
+                        if (Cesium.defined(pickedObject) && pickedObject.id && pickedObject.id.destination) {
+                            focusDestination(pickedObject.id.destination);
+                        }
+                    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                    
+                    // Posizione iniziale vista Terra
+                    camera.setView({
+                        destination: Cesium.Cartesian3.fromDegrees(0, 20, 15000000) // Vista globale iniziale
+                    });
+                    
+                    // Verifica texture caricate
+                    setTimeout(() => {
+                        globeReady = true;
+                        clearTimeout(failTimer);
+                        
+                        updateBadge(elements.globeBadge, '🌍 Globe: ✅ CesiumJS Realistico', 'success');
+                        addMessage('🌍 Globe terrestre CesiumJS caricato! Texture satellitari HD e terreno 3D attivi.', 'system');
+                        console.log('[GLOBE] ✅ Globe terrestre CesiumJS pronto con texture realistiche');
+                        
+                        // Nascondi banner fallback se presente
+                        hideFallbackBanner();
+                        
+                    }, 2000);
+                    
+                }, 1000);
+                
+                return true;
+                
+            } catch (error) {
+                console.error('[GLOBE] ❌ Errore inizializzazione CesiumJS:', error);
+                clearTimeout(failTimer);
+                enableCssFallback(`Errore: ${error.message}`);
+                return false;
+            }
+        }
+        
+        // === HELPER FUNCTION PER PIN DESTINAZIONI ===
+        function createDestinationPin(color, city) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 48;
+            canvas.height = 48;
+            const ctx = canvas.getContext('2d');
+            
+            // Pin background
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(24, 18, 16, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Pin pointer
+            ctx.beginPath();
+            ctx.moveTo(24, 34);
+            ctx.lineTo(16, 26);
+            ctx.lineTo(32, 26);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Inner circle
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(24, 18, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            return canvas.toDataURL();
+        }
+        
+        // === CONFIG LOADER PER VERCEL ===
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                cesiumToken = config.cesiumToken;
+                console.log('[CONFIG] ✅ Token Cesium caricato da Vercel API');
+                return true;
+            } catch (error) {
+                console.warn('[CONFIG] ⚠️ Fallback token locale:', error);
+                // Fallback per Replit
+                cesiumToken = (typeof window !== 'undefined' && window.cesiumTokenInjected) ? 
+                    window.cesiumTokenInjected : '';
+                return false;
+            }
+        }
+        
+        // === FOCUS DESTINATION CESIUMJS ===
+        function focusDestination(destination) {
+            console.log('[DEST] Focus CesiumJS:', destination.city);
+            currentDestination = destination;
+            
+            // ZOOM FLUIDO CESIUMJS - STREET LEVEL
+            if (globe && globe.scene && globeReady) {
+                console.log(`[FOCUS_CESIUMJS] Zoom su ${destination.city}`);
+                
+                // Zoom a livello città (1-5km di altezza)
+                const FOCUS_HEIGHT = 2000; // 2km di altezza per vista città
+                
+                globe.scene.camera.flyTo({
+                    destination: Cesium.Cartesian3.fromDegrees(
+                        destination.lng, 
+                        destination.lat, 
+                        FOCUS_HEIGHT
+                    ),
+                    duration: 2.5, // Animazione fluida
+                    maximumHeight: 50000,
+                    pitchAdjustHeight: 1000,
+                    endTransform: Cesium.Matrix4.IDENTITY
+                });
+                
+                // Aggiorna badge dopo zoom
+                setTimeout(() => {
+                    updateBadge(elements.globeBadge, `🌍 Globe: ✅ ${destination.city}`, 'success');
+                    console.log(`[FOCUS_CESIUMJS] ✅ Focus completato su ${destination.city} (${FOCUS_HEIGHT}m)`);
+                }, 2600);
+            }
+            
+            // Mostra pannello info
+            document.getElementById('infoTitle').textContent = `${destination.city}, ${destination.country}`;
+            document.getElementById('infoDescription').textContent = destination.description;
+            document.getElementById('infoPrice').textContent = `€${destination.price}`;
+            
+            elements.infoPanel.classList.add('show');
+            
+            // Integrazione chat
+            wsSend({ 
+                type: 'dest-click', 
+                dest: `${destination.city}, ${destination.country}`,
+                name: destination.name
+            });
+        }
+        
+        // CesiumJS gestisce automaticamente i controlli mobile
+                        
+                        // LIMITI ZOOM RIGIDI: 600km - 20.000km
+                        const MIN_ALTITUDE = 1.1;  // ~600km dalla superficie  
+                        const MAX_ALTITUDE = 350;  // ~20.000km dalla superficie
+                        
+                        controls.minDistance = MIN_ALTITUDE * 100;
+                        controls.maxDistance = MAX_ALTITUDE * 100;
+                        controls.enableDamping = true;
+                        controls.dampingFactor = 0.25; // Più fluido
+                        
+                        // THROTTLING AGGRESSIVO per mobile
+                        let lastZoom = 0;
+                        let lastTouch = 0;
+                        let isZooming = false;
+                        
+                        // Intercetta controlli globali per clamp continuo
+                        const originalUpdate = controls.update;
+                        controls.update = function() {
+                            const now = performance.now();
+                            
+                            // Throttle a 30fps per ridurre CPU
+                            if (now - lastZoom < 33) return;
+                            lastZoom = now;
+                            
+                            // Clamp continuo dell'altitudine
+                            const pov = globe.pointOfView();
+                            if (pov && pov.altitude) {
+                                let clamped = false;
+                                
+                                if (pov.altitude > MAX_ALTITUDE) {
+                                    console.log(`[ZOOM] 🚫 Limitato zoom troppo lontano: ${pov.altitude.toFixed(1)} -> ${MAX_ALTITUDE}`);
+                                    globe.pointOfView({
+                                        lat: pov.lat,
+                                        lng: pov.lng,
+                                        altitude: MAX_ALTITUDE * 0.9
+                                    }, 600);
+                                    clamped = true;
+                                } else if (pov.altitude < MIN_ALTITUDE) {
+                                    console.log(`[ZOOM] 🚫 Limitato zoom troppo vicino: ${pov.altitude.toFixed(1)} -> ${MIN_ALTITUDE}`);
+                                    globe.pointOfView({
+                                        lat: pov.lat,
+                                        lng: pov.lng,
+                                        altitude: MIN_ALTITUDE * 1.1
+                                    }, 400);
+                                    clamped = true;
+                                }
+                                
+                                // Log altitudine per debug
+                                if (!clamped && now % 2000 < 33) {
+                                    console.log(`[CAMERA] Altitudine: ${pov.altitude.toFixed(1)} (${(pov.altitude * 100).toFixed(0)}km)`);
+                                }
+                            }
+                            
+                            if (!isZooming) {
+                                originalUpdate.call(this);
+                            }
+                        };
+                    }
+                    
+                    // GESTIONE EVENTI MOBILE OTTIMIZZATA
+                    const canvas = globe.renderer().domElement;
+                    
+                    // Prevenire scroll browser su iOS/Safari
+                    canvas.style.touchAction = 'none';
+                    canvas.style.overscrollBehavior = 'contain';
+                    
+                    // Throttle wheel events (mouse/trackpad)
+                    let lastWheel = 0;
+                    canvas.addEventListener('wheel', (e) => {
+                        const now = performance.now();
+                        if (now - lastWheel < 50) { // 20 eventi/s max
+                            e.preventDefault();
+                            return;
+                        }
+                        lastWheel = now;
+                        console.log('[INPUT] Wheel evento');
+                        e.preventDefault();
+                    }, { passive: false });
+                    
+                    // Throttle touch events (mobile pinch)
+                    let lastTouch = 0;
+                    let touchCount = 0;
+                    
+                    canvas.addEventListener('touchstart', (e) => {
+                        touchCount = e.touches.length;
+                        isZooming = touchCount > 1;
+                        if (isZooming) {
+                            console.log('[INPUT] Pinch start');
+                        }
+                        e.preventDefault();
+                    }, { passive: false });
+                    
+                    canvas.addEventListener('touchmove', (e) => {
+                        const now = performance.now();
+                        if (now - lastTouch < 33) { // 30fps max
+                            e.preventDefault();
+                            return;
+                        }
+                        lastTouch = now;
+                        
+                        if (e.touches.length > 1) {
+                            isZooming = true;
+                            console.log('[INPUT] Pinch move');
+                        }
+                        e.preventDefault();
+                    }, { passive: false });
+                    
+                    canvas.addEventListener('touchend', (e) => {
+                        if (isZooming && e.touches.length < 2) {
+                            isZooming = false;
+                            console.log('[INPUT] Pinch end');
+                        }
+                        e.preventDefault();
+                    }, { passive: false });
+                    
+                    // Posizione iniziale
+                    globe.pointOfView({ lat: 20, lng: 0, altitude: 2.5 });
+                    
+                    // Verifica texture caricate
+                    setTimeout(() => {
+                        globeReady = true;
+                        clearTimeout(failTimer);
+                        
+                        updateBadge(elements.globeBadge, '🌍 Globe: ✅ Terrestre 3D', 'success');
+                        addMessage('🌍 Globe terrestre 3D caricato! Texture reali e pin attivi.', 'system');
+                        console.log('[GLOBE] ✅ Globe terrestre 3D pronto con texture reali');
+                        
+                        // Nascondi banner fallback se presente
+                        hideFallbackBanner();
+                        
+                    }, 2000);
+                    
+                }, 1000);
+                
+                return true;
+                
+            } catch (error) {
+                console.error('[GLOBE] ❌ Errore inizializzazione:', error);
+                clearTimeout(failTimer);
+                enableCssFallback(`Errore: ${error.message}`);
+                return false;
+            }
+        }
+        
+        // Funzione focusDestination già aggiornata sopra per CesiumJS
+        
+        function closeInfo() {
+            elements.infoPanel.classList.remove('show');
+            currentDestination = null;
+        }
+        
+        function bookDestination() {
+            if (currentDestination) {
+                wsSend({
+                    type: 'user',
+                    text: `Vorrei informazioni su ${currentDestination.city}, ${currentDestination.country}`
+                });
+                closeInfo();
+            }
+        }
+        
+        // === FALLBACK CSS GLOBE ===
+        function enableCssFallback(reason = 'Globe.gl non disponibile') {
+            console.log(`[FALLBACK] Attivazione fallback: ${reason}`);
+            
+            if (globe) {
+                try {
+                    // Non distruggere se sta funzionando parzialmente
+                    console.log('[FALLBACK] Globe esistente mantenuto');
+                } catch (e) {
+                    console.warn('[FALLBACK] Errore cleanup globe:', e);
+                }
+            }
+            
+            // Mostra banner fallback
+            showFallbackBanner(`Globe fallback attivo - ${reason}`);
+            
+            // Attiva globo CSS con texture
+            elements.fallbackGlobe.classList.add('active');
+            
+            // Aggiungi pin CSS
+            const pinsHTML = destinations.map((dest, i) => {
+                const angle = (i / destinations.length) * 2 * Math.PI;
+                const radius = 38;
+                const x = 50 + radius * Math.cos(angle);
+                const y = 50 + radius * Math.sin(angle);
+                
+                return `
+                    <div class="fallback-pin" 
+                        style="
+                            top: ${y}%; 
+                            left: ${x}%;
+                            background: ${dest.color};
+                        "
+                        data-city="${dest.city}, ${dest.country}"
+                        onclick="focusDestination(${JSON.stringify(dest).replace(/"/g, '&quot;')})"
+                        title="${dest.city}, ${dest.country}">
+                    </div>
+                `;
+            }).join('');
+            
+            elements.fallbackGlobe.innerHTML = pinsHTML;
+            
+            updateBadge(elements.globeBadge, '🌍 Globe: ⚠️ Fallback', 'warning');
+            addMessage(`⚠️ ${reason} - Fallback CSS attivo con texture terrestre`, 'system');
+        }
+        
+        function showFallbackBanner(text) {
+            elements.fallbackBanner.textContent = `⚠️ ${text}`;
+            elements.fallbackBanner.classList.add('show');
+        }
+        
+        function hideFallbackBanner() {
+            elements.fallbackBanner.classList.remove('show');
+        }
+        
+        // === WEBSOCKET STABILE MOBILE-FRIENDLY ===
+        const WS_URL = `${location.origin.replace('http','ws')}/ws`;
+        
+        function connectWS() {
+            // Previeni connessioni multiple
+            if (ws && (ws.readyState === 0 || ws.readyState === 1)) {
+                console.log('[WS] Connessione già attiva, skip');
+                return;
+            }
+            
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), maxReconnectDelay);
+            console.log(`[WS] Connessione... (tentativo ${reconnectAttempts + 1}, delay: ${delay}ms)`);
+            
+            setWsStatus('connecting');
+            
+            ws = new WebSocket(WS_URL);
+            
+            ws.onopen = () => {
+                console.log('[WS] ✅ Connesso');
+                wsReady = true;
+                reconnectAttempts = 0;
+                setWsStatus('online');
+                flushWsQueue();
+            };
+            
+            ws.onclose = (ev) => {
+                console.warn(`[WS] ❌ Disconnesso - Code: ${ev.code}, Reason: ${ev.reason || 'N/A'}`);
+                wsReady = false;
+                setWsStatus('offline');
+                
+                // Schedula riconnessione con backoff esponenziale
+                scheduleReconnect();
+            };
+            
+            ws.onerror = (error) => {
+                console.error('[WS] Errore connessione:', error);
+                ws.close();
+            };
+            
+            ws.onmessage = (ev) => {
+                // Handle ping/pong
+                try {
+                    const msg = JSON.parse(ev.data);
+                    if (msg.type === 'ping') {
+                        // Rispondi con pong
+                        sendSafe({ type: 'pong', t: msg.server_time || Date.now() });
+                        return;
+                    } else if (msg.type === 'pong') {
+                        // Ping risposto, connessione attiva
+                        console.log('[WS] Pong ricevuto');
+                        return;
+                    }
+                } catch (e) {
+                    // Non è JSON, processa normalmente
+                }
+                
+                handleWsMessage(ev.data);
+            };
+        }
+        
+        function scheduleReconnect() {
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), maxReconnectDelay);
+            reconnectAttempts++;
+            console.log(`[WS] Riconnessione programmata tra ${delay}ms (tentativo ${reconnectAttempts})`);
+            setTimeout(connectWS, delay);
+        }
+        
+        function sendSafe(payload) {
+            if (!ws || ws.readyState !== 1) {
+                wsQueue.push(JSON.stringify(payload));
+                return;
+            }
+            ws.send(JSON.stringify(payload));
+        }
+        
+        // Keep-alive ping ogni 28s
+        setInterval(() => {
+            if (wsReady) {
+                sendSafe({ type: 'ping', t: Date.now() });
+                console.log('[WS] Keep-alive ping inviato');
+            }
+        }, 28000);
+        
+        function wsSend(obj) {
+            if (!wsReady) {
+                showToast('WebSocket non connesso - messaggio in coda');
+                wsQueue.push(JSON.stringify(obj));
+                return;
+            }
+            sendSafe(obj);
+        }
+        
+        function flushWsQueue() {
+            while (wsQueue.length && wsReady && ws.readyState === 1) {
+                ws.send(wsQueue.shift());
+            }
+        }
+        
+        function setWsStatus(status) {
+            const statusEl = elements.wsStatus;
+            const badgeEl = elements.wsBadge;
+            
+            switch (status) {
+                case 'online':
+                    statusEl.textContent = 'Online ✅';
+                    statusEl.className = 'online';
+                    updateBadge(badgeEl, 'WS: ✅ Online', 'success');
+                    break;
+                case 'connecting':
+                    statusEl.textContent = 'Connessione...';
+                    statusEl.className = 'connecting';
+                    updateBadge(badgeEl, 'WS: 🔄 Connessione...', 'warning');
+                    break;
+                case 'offline':
+                default:
+                    statusEl.textContent = 'Offline ❌';
+                    statusEl.className = 'offline';
+                    updateBadge(badgeEl, 'WS: ❌ Offline', 'error');
+                    break;
+            }
+            updateSendButton();
+        }
+        
+        function handleWsMessage(data) {
+            try {
+                const msg = JSON.parse(data);
+                
+                // Handle pong già gestito in onmessage
+                if (msg.type === 'pong') {
+                    return;
+                }
+                
+                if (msg.type === 'assistant' && msg.text) {
+                    addMessage(msg.text, 'assistant');
+                } else if (msg.message) {
+                    addMessage(msg.message, 'assistant');
+                } else if (msg.error) {
+                    addMessage(`Errore: ${msg.error}`, 'error');
+                }
+                
+            } catch (err) {
+                console.error('[WS] Parse error:', err);
+                addMessage('Errore comunicazione', 'error');
+            }
+        }
+        
+        // === CHAT FUNCTIONS ===
+        function updateSendButton() {
+            const hasText = elements.chatInput.value.trim().length > 0;
+            elements.sendButton.disabled = !hasText || !wsReady;
+        }
+        
+        function sendChat() {
+            const text = elements.chatInput.value.trim();
+            if (!text) return;
+            
+            if (!wsReady) {
+                showToast('WebSocket non connesso');
+                return;
+            }
+            
+            addMessage(text, 'user');
+            elements.chatInput.value = '';
+            updateSendButton();
+            
+            wsSend({
+                type: 'user',
+                text: text
+            });
+        }
+        
+        // === GEOLOCALIZZAZIONE ===
+        function requestGPS() {
+            updateBadge(elements.gpsStatus, 'GPS: Richiesta...', 'warning');
+            
+            if (!navigator.geolocation) {
+                updateBadge(elements.gpsStatus, 'GPS: Non supportato', 'error');
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    console.log(`[GPS] ✅ Posizione: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                    updateBadge(elements.gpsStatus, 'GPS: ✅ Attivo', 'success');
+                    
+                    addMessage(`📍 Posizione: ${lat.toFixed(4)}, ${lng.toFixed(4)}`, 'system');
+                },
+                (error) => {
+                    console.warn('[GPS] Errore:', error.message);
+                    updateBadge(elements.gpsStatus, 'GPS: ❌ Negato', 'error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000
+                }
+            );
+        }
+        
+        // === EVENT LISTENERS ===
+        elements.chatInput.addEventListener('input', updateSendButton);
+        elements.sendButton.addEventListener('click', sendChat);
+        
+        elements.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChat();
+            }
+        });
+        
+        // CSS per animazione pin
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // === FUNZIONI GLOBALI ===
+        window.focusDestination = focusDestination;
+        window.closeInfo = closeInfo;
+        window.bookDestination = bookDestination;
+        
+        // === INIZIALIZZAZIONE SISTEMA ===
+        async function initSystem() {
+            console.log('[INIT] 🚀 Avvio sistema Ares Travel...');
+            
+            updateLoadingStep('Inizializzazione sistema...');
+            
+            // 1. Tentativo Globe.gl 3D
+            const globeSuccess = await initGlobeTerrestre();
+            
+            // 2. Se fallisce, attiva fallback
+            if (!globeSuccess) {
+                enableCssFallback('Inizializzazione fallita');
+            }
+            
+            // 3. WebSocket
+            updateLoadingStep('Connessione WebSocket...');
+            connectWS();
+            
+            // 4. GPS (dopo un delay)
+            setTimeout(() => {
+                updateLoadingStep('Richiesta geolocalizzazione...');
+                requestGPS();
+            }, 1000);
+            
+            // 5. Completa inizializzazione
+            setTimeout(() => {
+                elements.loading.style.opacity = '0';
+                setTimeout(() => {
+                    elements.loading.style.display = 'none';
+                }, 500);
+                
+                if (globeSuccess && globeReady) {
+                    addMessage('🌍 Sistema Ares Travel operativo! Globe terrestre 3D con texture reali attivo.', 'system');
+                } else {
+                    addMessage('⚠️ Sistema attivo con globe fallback (texture terrestre)', 'system');
+                }
+                
+                elements.chatInput.focus();
+            }, globeSuccess ? 2000 : 1000);
+            
+            console.log('[INIT] ✅ Sistema inizializzato');
+        }
+        
+        // === HEALTH CHECK ENDPOINT ===
+        async function healthCheck() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                console.log('[HEALTH] Status:', data);
+                return response.status === 200 && data.status === 'ok';
+            } catch (error) {
+                console.error('[HEALTH] Errore:', error);
+                return false;
+            }
+        }
+        
+        // === AVVIO SISTEMA ===
+        document.addEventListener('DOMContentLoaded', () => {
+            initSystem();
+            
+            // Health check periodico
+            setInterval(healthCheck, 30000);
+        });
+        
+        // === GESTIONE ERRORI ===
+        window.addEventListener('error', (e) => {
+            console.error('[ERROR]', e.message);
+            if (e.message.includes('globe.htmlElementsData') || e.message.includes('Globe')) {
+                console.warn('[ERROR] Errore Globe.gl - attivazione fallback');
+                enableCssFallback('Errore Globe.gl API');
+            }
+        });
+        
+        // === RESIZE HANDLER ===
+        window.addEventListener('resize', () => {
+            if (globe && globeReady) {
+                globe.width(window.innerWidth).height(window.innerHeight - 60);
+            }
+        });
+    </script>
+</body>
+</html>
